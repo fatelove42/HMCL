@@ -157,6 +157,14 @@ public class DefaultDependencyManager extends AbstractDependencyManager {
 
     @Override
     public Task<GameInstanceManifest> installLibraryAsync(GameInstanceManifest baseVersion, RemoteVersion libraryVersion) {
+        var existingPatch = baseVersion.getPatches().stream()
+                .filter(patch -> libraryVersion.getLibraryId().equals(patch.id()))
+                .findFirst();
+
+        if (existingPatch.isPresent() && java.util.Objects.equals(existingPatch.get().version(), libraryVersion.getSelfVersion())) {
+            return Task.completed(baseVersion);
+        }
+
         AtomicReference<GameInstanceManifest> removedLibraryVersion = new AtomicReference<>();
 
         return removeLibraryAsync(baseVersion, libraryVersion.getLibraryId())
